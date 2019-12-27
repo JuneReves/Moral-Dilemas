@@ -15,10 +15,13 @@
 
     timeline.push({
         type: 'canvas',
+        l_image: '1.png',
+        r_image: 'seinfeld.jpg'
     });
 
     jsPsych.init({
         timeline: timeline,
+        preload_images: ['1.png','seinfeld.jpg'],
         on_finish: function(){jsPsych.data.displayData();}
     });
 

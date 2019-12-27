@@ -16,6 +16,18 @@ jsPsych.plugins["canvas"] = (function() {
     name: 'canvas',
     description: '',
     parameters: {
+      l_image: {
+        type: jsPsych.plugins.parameterType.IMAGE,
+        pretty_name: 'Left Image',
+        default: undefined,
+        description: 'The image to be displayed on the left'
+      },
+      r_image: {
+        type: jsPsych.plugins.parameterType.IMAGE,
+        pretty_name: 'Right Image',
+        default: undefined,
+        description: 'The image to be displayed on the right'
+      },
       width: {
         type: jsPsych.plugins.parameterType.INT,
         pretty_name: 'Width',
@@ -63,12 +75,14 @@ jsPsych.plugins["canvas"] = (function() {
 
   plugin.trial = function(display_element, trial) {
 
+    var right_image = jsPsych.pluginAPI.getImagesObjs(trial.r_image);
+    var left_image = jsPsych.pluginAPI.getImagesObjs(trial.l_image);
     display_element.innerHTML = '' +
         '<div style="z-index: 0; width="'+trial.width+'" height="'+trial.height+'; position:relative; top:20px; margin:auto;" style="position:relative; top:20px; margin:auto;">' +
         '<canvas id="can" width="'+trial.width+'" height="'+trial.height+'" style="position:relative; border:2px solid;"></canvas></div>' +
         '<br><button id="clear" class="jspsych-btn">Clear</button>';
 
-    var canvas, ctx, flag = false,
+    var canvas, ctx, flag, drawn = false,
         prevX = 0,
         currX = 0,
         prevY = 0,
@@ -82,16 +96,8 @@ jsPsych.plugins["canvas"] = (function() {
     var w = canvas.width;
     var h = canvas.height;
 
-    var img = new Image();
-    img.src = '1.png';
-    img.onload = function() {ctx.drawImage(img, 100, 150,200,200)};
-
-
-    var img2 = new Image();
-    img2.src = '2.png';
-    img2.onload = function() {ctx.drawImage(img2, 500, 150,200,200)};
-
-
+    ctx.drawImage(left_image, 100, 150,200,200);
+    ctx.drawImage(right_image, 500, 150,200,200);
 
     canvas.addEventListener("mousemove", function (e) {
       findxy('move', e)
@@ -107,6 +113,7 @@ jsPsych.plugins["canvas"] = (function() {
     }, false);
 
     function draw() {
+      drawn = true;
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
       ctx.lineTo(currX, currY);
@@ -149,9 +156,10 @@ jsPsych.plugins["canvas"] = (function() {
 
 
     function erase() {
+      drawn = false;
       ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, 100, 150,200,200);
-      ctx.drawImage(img2, 500, 150,200,200);
+      ctx.drawImage(left_image, 100, 150,200,200);
+      ctx.drawImage(right_image, 500, 150,200,200);
     }
 
     display_element.querySelector('#clear').addEventListener('click', erase);
@@ -162,7 +170,8 @@ jsPsych.plugins["canvas"] = (function() {
     // store response
     var response = {
       rt: null,
-      button: null
+      response: null,
+      clears: null
     };
 
     // function to handle responses by the subject
